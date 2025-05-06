@@ -43,7 +43,8 @@ char **env_to_tab(t_env_var *env)
     tab[i] = NULL;
     return(tab);
 }
-char *get_env_value(t_env_var *env, const char *key)
+
+char *get_env_value_char(t_env_var *env, const char *key)
 {
     while (env)
     {
@@ -52,4 +53,15 @@ char *get_env_value(t_env_var *env, const char *key)
         env = env->next;
     }
     return ("");
+}
+
+t_env_var *get_env_value(t_env_var *env, const char *key)
+{
+    while (env)
+    {
+        if (ft_strcmp(env->cle, key) == 0)
+            return (env);
+        env = env->next;
+    }
+    return (NULL);
 }

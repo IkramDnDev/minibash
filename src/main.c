@@ -45,7 +45,7 @@ t_cmd	*parse_input(char *line)
 		return (NULL);
 	cmd->argv = args;
 	cmd->infile = NULL;
-	cmd->outfile = "outfile.txt"; 
+	cmd->outfile = NULL; 
 	cmd->append = 0;
 	cmd->next = NULL;
 	return (cmd);
@@ -57,7 +57,7 @@ void f()
 
 int main(int argc, char **argv, char **envp)
 {
-	atexit(f);
+	// atexit(f);
 	t_minishell data;
 	t_env_var *env;
 	(void)argc;

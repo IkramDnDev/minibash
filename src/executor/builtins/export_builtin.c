@@ -11,6 +11,10 @@ bool check_varname(const char *arg)
         return(false);
     while(arg[i] && arg[i] != '=')
     {
+        if (arg[i] == '+' && arg[i + 1] == '=')
+            return (true);
+        if (arg[i] == '=')
+            return (true);
         if (!ft_isalnum(arg[i]) && arg[i] != '_')
             return(false);
         i++;
@@ -41,8 +45,6 @@ static void sort_env_tab(char **tab)
     i++;
     }
 }
-
-
 
 static void print_sorted_env(t_env_var *env)
 {
@@ -79,12 +81,24 @@ static void set_env_value(t_env_var **env, char *key, char *value)
     lstadd_back_env(env, new_var);
 }
 
+static bool is_append_export(const char *arg)
+{
+	int i = 0;
+	while (arg[i] && !(arg[i] == '+' && arg[i + 1] == '='))
+		i++;
+	return (arg[i] == '+' && arg[i + 1] == '=');
+}
+
+
 void exec_export(char **argv, t_env_var *envp)
 {
     int i;
     int equal_sign;
     char *key;
     char *value;
+    int key_len;
+    t_env_var *var;
+    char *new_value;
 
     i = 1;
     if (!argv[1])
@@ -100,17 +114,31 @@ void exec_export(char **argv, t_env_var *envp)
             g_status = 1;
             return ;
         }
-        else
+        if (is_append_export(argv[i]))
+        {
+            key_len = ft_strchr(argv[i], '+')  - argv[i];
+            key = ft_substr(argv[i], 0, key_len);
+            value = ft_substr(argv[i], key_len + 2, ft_strlen(argv[i]) - key_len - 2);
+            var = get_env_value(envp, key);
+            if (var)
+            {
+                new_value = ft_strjoin(var->value, value);
+                set_env_value(&envp, key, new_value);
+                free(new_value);
+            }
+            else
+                set_env_value(&envp, key, value);
+            free(key);
+            free(value);
+        }
+        else if (ft_strchr(argv[i], '='))
         {
             equal_sign = ft_strchr(argv[i], '=') - argv[i];
-            if (equal_sign >= 0)
-            {
-                key = ft_substr(argv[i], 0, equal_sign);
-                value = ft_substr(argv[i], equal_sign + 1, ft_strlen(argv[i]) - (equal_sign - 1));
-                set_env_value(&envp, key, value);
-                free(key);
-                free(value);
-            }
+            key = ft_substr(argv[i], 0, equal_sign);
+            value = ft_substr(argv[i], equal_sign + 1, ft_strlen(argv[i]) - (equal_sign - 1));
+            set_env_value(&envp, key, value);
+            free(key);
+            free(value);
         }
         i++;
     }

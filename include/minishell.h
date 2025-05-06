@@ -67,7 +67,7 @@ void        exec_exit(char **argv);
 void	    lstadd_back_env(t_env_var **lst, t_env_var *new_node);
 bool        check_varname(const char *arg);
 void        exec_unset(t_env_var **env, char **argv);
-char        *get_env_value(t_env_var *env, const char *key);
+t_env_var	*get_env_value(t_env_var *env, const char *key);
 t_env_var	*add_new_env(char *cle, char *value);
 void        clear_cmd_list(t_cmd **cmd_list);
 char        **env_to_tab(t_env_var *env);
@@ -82,6 +82,7 @@ void		exec_external(t_cmd *cmd, t_minishell *data);
 void		execute_pipeline(t_cmd *cmd, t_minishell *data);
 void		close_fds_except_std(void);
 void		free_env(t_env_var *env);
+char		*get_env_value_char(t_env_var *env, const char *key);
 
 //Errors
 

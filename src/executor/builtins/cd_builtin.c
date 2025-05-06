@@ -21,7 +21,7 @@ void exec_cd(char **argv, t_env_var *envp)
     char *target_dir;
     if (!argv[1])
     {
-        target_dir = get_env_value(envp, "HOME");
+        target_dir = get_env_value_char(envp, "HOME");
         if (!target_dir)
         {
             printf("minishell: cd: HOME not set\n");

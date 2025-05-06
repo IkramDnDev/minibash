@@ -39,6 +39,7 @@ void free_env(t_env_var *env)
         env = tmp;
     }
 }
+
 void	close_fds_except_std(void)
 {
 	int	fd;
