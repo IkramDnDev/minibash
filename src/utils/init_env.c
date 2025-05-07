@@ -14,8 +14,6 @@ t_env_var *add_new_env(char *key, char *value)
     return (new);
 }
 
-
-
 void	lstadd_back_env(t_env_var **lst, t_env_var *new_node)
 {
 	t_env_var	*last;

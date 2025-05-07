@@ -1,5 +1,14 @@
 #include "../../include/minishell.h"
 
+static void error_redirection(t_cmd *cmd, int stdin_backup, int stdout_backup)
+{
+    if (set_redirection(cmd) == -1)
+    {
+        restore_fd(stdin_backup, stdout_backup);
+        return;
+    }
+}
+
 void execute_cmds(t_minishell *data)
 {
     t_cmd *cmd;
@@ -16,12 +25,7 @@ void execute_cmds(t_minishell *data)
         {
             int stdin_backup = dup(STDIN_FILENO);
             int stdout_backup = dup(STDOUT_FILENO);
-            if (set_redirection(cmd) == -1)
-            {
-                close(stdin_backup);
-                close(stdout_backup);
-                return;
-            }
+            error_redirection(cmd, stdin_backup, stdout_backup);
             exec_builtin(cmd, data);
             restore_fd(stdin_backup, stdout_backup);
         }

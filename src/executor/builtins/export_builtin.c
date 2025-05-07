@@ -45,6 +45,7 @@ static void sort_env_tab(char **tab)
     i++;
     }
 }
+
 static void set_env_value(t_env_var **env, char *key, char *value)
 {
     t_env_var *tmp = *env;
@@ -89,18 +90,58 @@ static void print_sorted_env(t_env_var *env)
     free(tab);
 }
 
+static void handle_append_expand(const char *cmd, char *key, char *value, t_env_var *envp)
+{
+    t_env_var *var;
+    char *new_value;
+    int key_len;
+
+    key_len = ft_strchr(cmd, '+')  - cmd;
+    key = ft_substr(cmd, 0, key_len);
+    value = ft_substr(cmd, key_len + 2, ft_strlen(cmd) - key_len - 2);
+    var = get_env_value(envp, key);
+    if (var)
+    {
+        new_value = ft_strjoin(var->value, value);
+        set_env_value(&envp, key, new_value);
+        free(new_value);
+    }
+    else
+        set_env_value(&envp, key, value);
+    free(key);
+    free(value);
+}
+
+static void handle_export_with_value(const char *cmd, char *key, char *value, t_env_var *envp)
+{
+    int equal_sign;
+    equal_sign = ft_strchr(cmd, '=') - cmd;
+    key = ft_substr(cmd, 0, equal_sign);
+    value = ft_substr(cmd, equal_sign + 1, ft_strlen(cmd) - (equal_sign - 1));
+    set_env_value(&envp, key, value);
+    free(key);
+    free(value);
+}
+
+void handle_empty_value(char *cmd, t_env_var *envp)
+{
+    t_env_var *var;
+    if (!get_env_value(envp, cmd))
+    {
+        var = add_new_env(cmd, NULL);
+        lstadd_back_env(&envp, var);
+    }
+}
 
 void exec_export(char **argv, t_env_var *envp)
 {
     int i;
-    int equal_sign;
     char *key;
     char *value;
-    int key_len;
-    t_env_var *var;
-    char *new_value;
 
     i = 1;
+    key = NULL;
+    value = NULL;
     if (!argv[1])
     {
         print_sorted_env(envp);
@@ -110,44 +151,15 @@ void exec_export(char **argv, t_env_var *envp)
     {
         if (!check_varname(argv[i]))
         {
-            printf("minishell: export: `%s': not a valid identifier\n", argv[i]);
-            g_status = 1;
+            error_export(argv[i]);
             return ;
         }
         if (!ft_strchr(argv[i], '='))
-        {
-            if (!get_env_value(envp, argv[i]))
-            {
-                var = add_new_env(argv[i], NULL);
-                lstadd_back_env(&envp, var);
-            }
-        }
+            handle_empty_value(argv[i], envp);
         if (is_append_export(argv[i]))
-        {
-            key_len = ft_strchr(argv[i], '+')  - argv[i];
-            key = ft_substr(argv[i], 0, key_len);
-            value = ft_substr(argv[i], key_len + 2, ft_strlen(argv[i]) - key_len - 2);
-            var = get_env_value(envp, key);
-            if (var)
-            {
-                new_value = ft_strjoin(var->value, value);
-                set_env_value(&envp, key, new_value);
-                free(new_value);
-            }
-            else
-                set_env_value(&envp, key, value);
-            free(key);
-            free(value);
-        }
+            handle_append_expand(argv[i], key, value, envp);
         else if (ft_strchr(argv[i], '='))
-        {
-            equal_sign = ft_strchr(argv[i], '=') - argv[i];
-            key = ft_substr(argv[i], 0, equal_sign);
-            value = ft_substr(argv[i], equal_sign + 1, ft_strlen(argv[i]) - (equal_sign - 1));
-            set_env_value(&envp, key, value);
-            free(key);
-            free(value);
-        }
+            handle_export_with_value(argv[i], key, value, envp);
         i++;
     }
     g_status = 0;

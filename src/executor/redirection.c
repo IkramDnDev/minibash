@@ -29,7 +29,7 @@ int set_redirection(t_cmd *cmd)
         dup2(fd_out, STDOUT_FILENO);
         close(fd_out);
     }
-    return (0);        
+    return (0);      
 }
 
 void restore_fd(int saved_stdin, int saved_stdout)

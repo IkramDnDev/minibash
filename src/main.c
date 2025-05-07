@@ -52,7 +52,7 @@ t_cmd	*parse_input(char *line)
 }
 void f()
 {
-	system("leaks minishell");
+	system("lsof -c minishell");
 }
 
 int main(int argc, char **argv, char **envp)

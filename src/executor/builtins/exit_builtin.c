@@ -33,7 +33,6 @@ static int	long_value(const char *str)
 	return (1);
 }
 
-
 void exec_exit(char **argv)
 {
     long exit_code;

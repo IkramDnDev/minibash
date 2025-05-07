@@ -92,5 +92,7 @@ void error_no_such_file(const char *cmd);
 void error_fork(void);
 void error_general(const char *msg);
 void error_open_file(const char *filename);
+void error_is_directory(const char *cmd);
+void error_export(const char *cmd);
 
 #endif
