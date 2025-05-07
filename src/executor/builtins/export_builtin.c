@@ -45,25 +45,6 @@ static void sort_env_tab(char **tab)
     i++;
     }
 }
-
-static void print_sorted_env(t_env_var *env)
-{
-    int i;
-    char **tab;
-
-    tab = env_to_tab(env);
-    sort_env_tab(tab);
-    if (!tab)
-        return ;
-    i = 0;
-    while (tab[i])
-    {
-        printf("declare -x %s\n", tab[i]);
-        free(tab[i]);
-        i++;
-    }
-    free(tab);
-}
 static void set_env_value(t_env_var **env, char *key, char *value)
 {
     t_env_var *tmp = *env;
@@ -87,6 +68,25 @@ static bool is_append_export(const char *arg)
 	while (arg[i] && !(arg[i] == '+' && arg[i + 1] == '='))
 		i++;
 	return (arg[i] == '+' && arg[i + 1] == '=');
+}
+
+static void print_sorted_env(t_env_var *env)
+{
+    int i;
+    char **tab;
+
+    tab = env_to_tab(env);
+    sort_env_tab(tab);
+    if (!tab)
+        return ;
+    i = 0;
+    while (tab[i])
+    {
+        printf("declare -x %s\n", tab[i]);
+        free(tab[i]);
+        i++;
+    }
+    free(tab);
 }
 
 
@@ -113,6 +113,14 @@ void exec_export(char **argv, t_env_var *envp)
             printf("minishell: export: `%s': not a valid identifier\n", argv[i]);
             g_status = 1;
             return ;
+        }
+        if (!ft_strchr(argv[i], '='))
+        {
+            if (!get_env_value(envp, argv[i]))
+            {
+                var = add_new_env(argv[i], NULL);
+                lstadd_back_env(&envp, var);
+            }
         }
         if (is_append_export(argv[i]))
         {

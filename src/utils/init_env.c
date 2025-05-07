@@ -1,17 +1,19 @@
 #include "../../include/minishell.h"
 
-t_env_var	*add_new_env(char *cle, char *value)
+t_env_var *add_new_env(char *key, char *value)
 {
-	t_env_var	*new_node;
-
-	new_node = (t_env_var *)malloc(sizeof(t_env_var));
-	if (!new_node)
-		return (NULL);
-	new_node->cle = ft_strdup(cle);
-	new_node->value = ft_strdup(value);
-	new_node->next = NULL;
-	return (new_node);
+    t_env_var *new = malloc(sizeof(t_env_var));
+    if (!new)
+        return (NULL);
+    new->cle = ft_strdup(key);
+	if (value)
+		new->value = ft_strdup(value);
+	else
+		new->value = NULL;
+    new->next = NULL;
+    return (new);
 }
+
 
 
 void	lstadd_back_env(t_env_var **lst, t_env_var *new_node)

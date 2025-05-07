@@ -31,7 +31,9 @@ void exec_unset(t_env_var **env, char **argv)
 
     while (argv[i])
     {
-        if (check_varname(argv[i]))
+        if (!check_varname(argv[i]))
+            printf("minishell: unset: `%s': not a valid identifier\n", argv[i]);
+        else
             unset_var(env, argv[i]);
         i++;
     }

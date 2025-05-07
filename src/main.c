@@ -9,7 +9,7 @@ t_cmd *fake_parse_input(void)
 
     // Commande 1 : ls
     cmd1->argv = malloc(sizeof(char *) * 2);
-    cmd1->argv[0] = ft_strdup("env");
+    cmd1->argv[0] = ft_strdup("true");
     cmd1->argv[1] = NULL;
     cmd1->isfirst = 1;
     cmd1->islast = 0;
@@ -18,10 +18,10 @@ t_cmd *fake_parse_input(void)
     cmd1->next = cmd2;
 
     // Commande 2 : grep .c
-    cmd2->argv = malloc(sizeof(char *) * 3);
-    cmd2->argv[0] = ft_strdup("grep");
-    cmd2->argv[1] = ft_strdup("home");
-    cmd2->argv[2] = NULL;
+    cmd2->argv = malloc(sizeof(char *) * 2);
+    cmd2->argv[0] = ft_strdup("false");
+    // cmd2->argv[1] = ft_strdup("home");
+    cmd2->argv[1] = NULL;
     cmd2->isfirst = 0;
     cmd2->islast = 1;
 	cmd2->infile = NULL;
@@ -52,7 +52,7 @@ t_cmd	*parse_input(char *line)
 }
 void f()
 {
-	system("lsof -c minishell");
+	system("leaks minishell");
 }
 
 int main(int argc, char **argv, char **envp)

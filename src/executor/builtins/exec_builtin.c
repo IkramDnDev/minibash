@@ -36,8 +36,6 @@ void exec_builtin(t_cmd *cmd, t_minishell *data)
         exec_echo(cmd->argv);
     else if (!ft_strcmp(cmd->argv[0], "cd"))
         exec_cd(cmd->argv, data->envp);
-    else if (!ft_strcmp(cmd->argv[0], "exit"))
-        exec_exit(cmd->argv);
     if (!(ft_strcmp(cmd->argv[0], "pwd")) || !(ft_strcmp(cmd->argv[0], "PWD")))
         exec_pwd();
     else if (!(ft_strcmp(cmd->argv[0], "env")) || !(ft_strcmp(cmd->argv[0], "ENV"))) //redirection

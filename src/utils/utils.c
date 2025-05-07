@@ -34,9 +34,14 @@ char **env_to_tab(t_env_var *env)
         return(NULL);
     while (env)
     {
-        tmp = ft_strjoin(env->cle, "=");
-        tab[i] = ft_strjoin(tmp, env->value);
-        free(tmp);
+        if (env->value != NULL)
+        {
+            tmp = ft_strjoin(env->cle, "=");
+            tab[i] = ft_strjoin(tmp, env->value);
+            free(tmp);
+        }
+        else
+            tab[i] = ft_strdup(env->cle);
         env = env->next;
         i++;
     }
