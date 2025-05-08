@@ -2,7 +2,6 @@
 
 int g_status;
 
-
 // t_cmd *fake_parse_input(void)
 // {
 //     t_cmd *cmd1 = malloc(sizeof(t_cmd));
@@ -46,48 +45,50 @@ int g_status;
 // 		return (NULL);
 // 	cmd->argv = args;
 // 	cmd->infile = NULL;
-// 	cmd->outfile = NULL; 
+// 	cmd->outfile = NULL;
+// 	cmd->red->type = REDIRECT_IN;
+// 	cmd->red->value = "outfile.txt";
 // 	cmd->append = 0;
 // 	cmd->next = NULL;
 // 	return (cmd);
 // }
 
-char *ft_strdup(const char *s)
+
+static t_token_node *new_redir(int type, char *value)
 {
-	char *dup = malloc(strlen(s) + 1);
-	if (dup)
-		strcpy(dup, s);
-	return dup;
+	t_token_node *node = malloc(sizeof(t_token_node));
+	if (!node)
+		return (NULL);
+	node->type = type;
+	node->value = strdup(value);
+	node->flag = false;
+	node->fd_hrd = -1;
+	node->next = NULL;
+	return node;
 }
 
-char **add_arg(char **args, char *new)
+static void add_redir(t_cmd *cmd, t_token_node *redir)
 {
-	int i = 0;
-	while (args && args[i])
-		i++;
-	char **new_args = malloc(sizeof(char *) * (i + 2));
-	if (!new_args)
-		return NULL;
-	for (int j = 0; j < i; j++)
-		new_args[j] = args[j];
-	new_args[i] = ft_strdup(new);
-	new_args[i + 1] = NULL;
-	free(args);
-	return new_args;
+	t_token_node *tmp = cmd->red;
+	if (!tmp)
+		cmd->red = redir;
+	else
+	{
+		while (tmp->next)
+			tmp = tmp->next;
+		tmp->next = redir;
+	}
 }
 
-t_cmd *create_cmd_node()
+static t_cmd *new_cmd()
 {
-	t_cmd *cmd = malloc(sizeof(t_cmd));
+	t_cmd *cmd = calloc(1, sizeof(t_cmd));
 	if (!cmd)
-		return NULL;
-	cmd->argv = NULL;
-	cmd->infile = NULL;
-	cmd->outfile = NULL;
-	cmd->append = 0;
-	cmd->red = NULL;
+		return (NULL);
 	cmd->isfirst = false;
 	cmd->islast = false;
+	cmd->argv = NULL;
+	cmd->red = NULL;
 	cmd->next = NULL;
 	return cmd;
 }
@@ -96,51 +97,68 @@ t_cmd *parse_input(char *line)
 {
 	t_cmd *head = NULL;
 	t_cmd *curr = NULL;
-	char *token = strtok(line, " ");
-	t_cmd *cmd = create_cmd_node();
-	bool isfirst = true;
+	char **tokens = ft_split(line, ' ');
+	int i = 0, argc = 0;
+	char *argv[100]; // temporaire, mieux d'allouer dynamiquement
 
-	while (token)
-	{
-		if (strcmp(token, "|") == 0)
-		{
-			cmd->isfirst = isfirst;
-			cmd->islast = false;
-			if (!head)
-				head = cmd;
-			else
-				curr->next = cmd;
-			curr = cmd;
-			cmd = create_cmd_node();
-			isfirst = false;
-		}
-		else if (strcmp(token, ">") == 0 || strcmp(token, ">>") == 0)
-		{
-			char *next = strtok(NULL, " ");
-			if (!next)
-				break;
-			if (strcmp(token, ">>") == 0)
-				cmd->append = 1;
-			cmd->outfile = ft_strdup(next);
-		}
-		else if (strcmp(token, "<") == 0)
-		{
-			char *next = strtok(NULL, " ");
-			if (!next)
-				break;
-			cmd->infile = ft_strdup(next);
-		}
-		else
-			cmd->argv = add_arg(cmd->argv, token);
+	if (!tokens)
+		return (NULL);
 
-		token = strtok(NULL, " ");
-	}
-	cmd->isfirst = isfirst;
-	cmd->islast = true;
+	head = new_cmd();
 	if (!head)
-		head = cmd;
-	else
-		curr->next = cmd;
+		return (NULL);
+	curr = head;
+
+	while (tokens[i])
+	{
+		if (strcmp(tokens[i], "|") == 0)
+		{
+			argv[argc] = NULL;
+			curr->argv = malloc(sizeof(char *) * (argc + 1));
+			for (int j = 0; j < argc; j++)
+				curr->argv[j] = strdup(argv[j]);
+			curr->argv[argc] = NULL;
+			argc = 0;
+
+			t_cmd *next = new_cmd();
+			curr->next = next;
+			curr = next;
+		}
+		else if (strcmp(tokens[i], ">") == 0 && tokens[i + 1])
+			add_redir(curr, new_redir(REDIRECT_OUT, tokens[++i]));
+		else if (strcmp(tokens[i], ">>") == 0 && tokens[i + 1])
+			add_redir(curr, new_redir(REDIRECT_APPEND, tokens[++i]));
+		else if (strcmp(tokens[i], "<") == 0 && tokens[i + 1])
+			add_redir(curr, new_redir(REDIRECT_IN, tokens[++i]));
+		else
+			argv[argc++] = tokens[i];
+		i++;
+	}
+
+	// Copier les derniers arguments
+	if (argc > 0 && curr)
+	{
+		argv[argc] = NULL;
+		curr->argv = malloc(sizeof(char *) * (argc + 1));
+		for (int j = 0; j < argc; j++)
+			curr->argv[j] = strdup(argv[j]);
+		curr->argv[argc] = NULL;
+	}
+
+	// Marquer isfirst / islast
+	t_cmd *tmp = head;
+	if (tmp)
+		tmp->isfirst = true;
+	while (tmp && tmp->next)
+		tmp = tmp->next;
+	if (tmp)
+		tmp->islast = true;
+
+	// Free tokens
+	for (i = 0; tokens[i]; i++)
+		free(tokens[i]);
+	free(tokens);
+
 	return head;
 }
 

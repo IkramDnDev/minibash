@@ -17,6 +17,22 @@ extern int				g_status;
 
 struct stat				st;
 
+typedef enum e_token_type
+{
+	REDIRECT_IN,	// 0
+	REDIRECT_APPEND,// 1
+	HEREDOC,		// 2
+	REDIRECT_OUT,	// 3
+	SPC,			// 4
+	STRING,			// 5
+	PIPE,			// 6
+	DOUBLE_Q,		// 7
+	SINGLE_Q,		// 8
+	VAR,			// 9
+	EXIT_STATUS,	// 10
+	DOUBLE_DLR		// 11
+}	t_token_type;
+
 typedef struct s_token_node
 {
 	int					type;
@@ -29,9 +45,8 @@ typedef struct s_token_node
 typedef struct s_cmd
 {
 	char				**argv;
-	char				*infile;
-	char				*outfile;
-	int					append;
+	int					infile;
+	int					outfile;
 	bool				isfirst;
 	bool				islast;
 	t_token_node		*red;
@@ -45,11 +60,10 @@ typedef struct s_env_var
 	struct s_env_var	*next;
 }						t_env_var;
 
-// Structure principale du minishell
 typedef struct s_minishell
 {
-	t_env_var *envp; // Copie de l'environnement
-	t_cmd *cmd_list; // Liste chaînée de commandes
+	t_env_var *envp;
+	t_cmd *cmd_list;
 }						t_minishell;
 
 void					init_env(t_env_var **debut_env, char **env);

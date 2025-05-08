@@ -2,34 +2,37 @@
 
 int set_redirection(t_cmd *cmd)
 {
-    if (cmd->infile)
+    t_token_node *red = cmd->red;
+    int fd;
+
+    while (red)
     {
-        int fd_in = open(cmd->infile, O_RDONLY);
-        if (fd_in < 0)
+        if (red->type == REDIRECT_IN)
         {
-            printf("error in oppening file\n");
-            return (-1);
+            fd = open(red->value, O_RDONLY);
+            if (fd < 0)
+                return (perror(red->value), -1);
+            dup2(fd, STDIN_FILENO);
+            close(fd);
         }
-        dup2(fd_in, STDIN_FILENO);
-        close(fd_in);
-    }
-    if (cmd->outfile)
-    {
-        int flags;
-        if (cmd->append)
-            flags = O_CREAT | O_WRONLY | O_APPEND;
-        else 
-            flags = O_CREAT | O_WRONLY | O_TRUNC;
-        int fd_out = open(cmd->outfile, flags, 0644);
-        if (fd_out < 0)
+        else if (red->type == REDIRECT_OUT)
         {
-            printf("error in oppening file\n");
-            return (-1);   
+            fd = open(red->value, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+            if (fd < 0)
+                return (perror(red->value), -1);
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
         }
-        dup2(fd_out, STDOUT_FILENO);
-        close(fd_out);
-    }
-    return (0);      
+        else if (red->type == REDIRECT_APPEND)
+        {
+            fd = open(red->value, O_CREAT | O_WRONLY | O_APPEND, 0644);
+            if (fd < 0)
+                return (perror(red->value), -1);
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+        }
+        red = red->next;
+    }    return (0);
 }
 
 void restore_fd(int saved_stdin, int saved_stdout)
